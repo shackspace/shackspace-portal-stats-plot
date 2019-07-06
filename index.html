@@ -1,0 +1,245 @@
+<html>
+	<head>
+		<title>Portal Open Stats</title>
+		<script language="JavaScript" src="https://cdn.plot.ly/plotly-1.48.3.min.js"></script>
+		<script language="JavaScript">
+			var portalOpenStatsURL = "http://api.shackspace.de/v1/stats/portal";
+
+			function filterGreaterThanDate(element, date) {
+				return new Date(element.time) >= date;
+			}
+
+			function roundToDate(date) {
+				var d = roundToHour(date);
+				d.setHours(0);
+
+				return d;
+			}
+
+			function roundToMonth(date) {
+				var d = roundToDate(date);
+				d.setDate(1);
+				
+				return d;
+			}
+
+			function roundToHour(date) {
+				var d = new Date(date.getTime());
+				d.setMinutes(0);
+				d.setSeconds(0);
+				d.setMilliseconds(0);
+
+				return d;
+			}
+
+			/*
+			 * initializes plots using plotly lib
+			 * parameter openStatsData: parsed JSON of http://api.shackspace.de/v1/stats/portal
+			 * 	is expected to be an object like 
+			 *	[ 
+			 *		{ time: "1970-01-01T00:00:00", mean: "0" }, 
+			 *		{ time: "1970-01-01T01:00:00", mean: "1" },
+			 *		...
+			 *	]
+			 */
+			function initPlots(openStatsData) {
+				var last14Days = new Date(Date.now() - 1000*60*60*24*14)
+				var lastMonth = new Date(Date.now() - 1000*60*60*24*31)
+				var lastYear = new Date(Date.now() - 1000*60*60*24*365)
+
+				var data;
+
+				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, lastYear) ), roundToMonth );
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					'lastYear',
+					[ data ]
+				);
+
+				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ), roundToDate );
+				data['type'] = 'bar';
+				
+				Plotly.newPlot(
+					'lastMonth',
+					[ data ],
+					{ xaxis: { tickformat: '%a, %Y-%m-%d' } }
+				);
+
+				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ), roundToHour);
+				data['type'] = 'scatter';
+				data['line'] = { shape: 'spline' };
+
+				Plotly.newPlot(
+					'lastWeeks',
+					[ data ],
+					{ xaxis: { tickformat: '%a, %Y-%m-%d %H:%M' } }
+				);
+
+				data = accumulateByMonths( openStatsData.filter( x => filterGreaterThanDate(x, lastYear) ) );
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					'monthly',
+					[ data ]
+				);
+
+				data = accumulateByWeekdays( openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ) );
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					'daily',
+					[ data ]
+				);
+
+				data = accumulateByHours( openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ) );
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					'hourly',
+					[ data ]
+				);
+			}
+
+			function onLoad() {
+				var xreq = new XMLHttpRequest();
+				xreq.open("GET", portalOpenStatsURL, true);
+				xreq.addEventListener("load", function() { initPlots(JSON.parse(this.responseText)); } );
+				xreq.send();
+
+			}
+
+			/*
+			 * group open-stats using the granularity of the given rounding function
+			 */
+			function groupBy(openStatsData, dateRoundFunction) {
+				var data = { x: new Array(), y: new Array() };
+
+				var yValue = 0;
+				var xValue = null;
+
+				for (var i in openStatsData) {
+					var element = openStatsData[i];
+					var dateValue = dateRoundFunction( new Date( element.time ) );
+
+					if (xValue == null || xValue.getTime() != dateValue.getTime()) {
+						if (xValue != null) {
+							data.x.push(xValue);
+							data.y.push(yValue);
+						}
+
+						yValue = 0;
+						xValue = dateValue;
+					}
+
+					yValue += element.mean*1;
+				}
+
+				if (xValue != null) {
+					data.x.push(xValue);
+					data.y.push(yValue);
+				}
+
+				return data;
+			}
+
+			/*
+			 *	accumulate opening hours per month
+			 */
+			function accumulateByMonths(openStatsData) {
+				var data = { x: new Array(), y: new Array() };
+
+				data.x.push("January"); data.y.push(0);
+				data.x.push("Febuary"); data.y.push(0);
+				data.x.push("March"); data.y.push(0);
+				data.x.push("April"); data.y.push(0);
+				data.x.push("June"); data.y.push(0);
+				data.x.push("July"); data.y.push(0);
+				data.x.push("August"); data.y.push(0);
+				data.x.push("September"); data.y.push(0);
+				data.x.push("October"); data.y.push(0);
+				data.x.push("November"); data.y.push(0);
+				data.x.push("December"); data.y.push(0);
+
+				for (var i in openStatsData) {
+					var element = openStatsData[i];
+					var dateValue = new Date(element.time);
+
+					var month = dateValue.getMonth();
+					data.y[month] += element.mean*1;
+				}
+
+				return data;
+			}
+
+			/*
+			 *	accumulate opening hours per week day
+			 */
+			function accumulateByWeekdays(openStatsData) {
+				var data = { x: new Array(), y: new Array() };
+
+				data.x.push("Monday"); data.y.push(0);
+				data.x.push("Tuesday"); data.y.push(0);
+				data.x.push("Wednesday"); data.y.push(0);
+				data.x.push("Thursday"); data.y.push(0);
+				data.x.push("Friday"); data.y.push(0);
+				data.x.push("Saturday"); data.y.push(0);
+				data.x.push("Sunday"); data.y.push(0);
+
+				for (var i in openStatsData) {
+					var element = openStatsData[i];
+					var dateValue = new Date(element.time);
+
+					var dayOfWeek = dateValue.getDay();
+					data.y[dayOfWeek] += element.mean*1;
+				}
+
+				return data;
+			}
+
+			/*
+			 *	accumulate opening hours per day time
+			 */
+			function accumulateByHours(openStatsData) {
+				var data = { x: new Array(), y: new Array() };
+
+				for (var i=0; i<24; i++) {
+					data.x.push(i + ":00");
+					data.y.push(0);
+				}
+
+				for (var i in openStatsData) {
+					var element = openStatsData[i];
+					var dateValue = new Date(element.time);
+
+					var hours = dateValue.getHours();
+					data.y[hours] += element.mean*1;
+				}
+
+				return data;
+			}
+		</script>
+	</head>
+
+	<body onLoad="onLoad()">
+		<script language="JavaScript">
+			// dirty hack to bypass Same Origin Policy preventing the XMLHttpRequest to succeed
+			document.write('<iframe src="' + portalOpenStatsURL + '" style="display:none"></iframe>');
+		</script>
+		<h2>Opening hours history</h2>
+		<h3>last year</h3>
+		<div id="lastYear" style="width:80%;height:50%;"></div>
+		<h3>last month</h3>
+		<div id="lastMonth" style="width:80%;height:50%;"></div>
+		<h3>last two weeks</h3>
+		<div id="lastWeeks" style="width:80%;height:50%;"></div>
+
+		<h2>Accumulated opening hours</h2>
+		<h3>per month</h3>
+		<div id="monthly" style="width:80%;height:50%;"></div>
+		<h3>per weekday</h3>
+		<div id="daily" style="width:80%;height:50%;"></div>
+		<h3>per daytime</h3>
+		<div id="hourly" style="width:80%;height:50%;"></div>
+	</body>
+</html>
