@@ -1,113 +1,9 @@
 <html>
 	<head>
 		<title>Portal Open Stats</title>
-		<script language="JavaScript" src="https://cdn.plot.ly/plotly-1.48.3.min.js"></script>
+		<script language="JavaScript" src="plotly-latest.min.js"></script>
 		<script language="JavaScript">
 			var portalOpenStatsURL = "http://api.shackspace.de/v1/stats/portal";
-
-			function filterGreaterThanDate(element, date) {
-				return new Date(element.time) >= date;
-			}
-
-			function roundToDate(date) {
-				var d = roundToHour(date);
-				d.setHours(0);
-
-				return d;
-			}
-
-			function roundToMonth(date) {
-				var d = roundToDate(date);
-				d.setDate(1);
-				
-				return d;
-			}
-
-			function roundToHour(date) {
-				var d = new Date(date.getTime());
-				d.setMinutes(0);
-				d.setSeconds(0);
-				d.setMilliseconds(0);
-
-				return d;
-			}
-
-			/*
-			 * initializes plots using plotly lib
-			 * parameter openStatsData: parsed JSON of http://api.shackspace.de/v1/stats/portal
-			 * 	is expected to be an object like 
-			 *	[ 
-			 *		{ time: "1970-01-01T00:00:00", mean: "0" }, 
-			 *		{ time: "1970-01-01T01:00:00", mean: "1" },
-			 *		...
-			 *	]
-			 */
-			function initPlots(openStatsData) {
-				var last14Days = new Date(Date.now() - 1000*60*60*24*14)
-				var lastMonth = new Date(Date.now() - 1000*60*60*24*31)
-				var lastYear = new Date(Date.now() - 1000*60*60*24*365)
-
-				var data;
-
-				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, lastYear) ), roundToMonth );
-				data['type'] = 'bar';
-
-				Plotly.newPlot(
-					'lastYear',
-					[ data ]
-				);
-
-				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ), roundToDate );
-				data['type'] = 'bar';
-				
-				Plotly.newPlot(
-					'lastMonth',
-					[ data ],
-					{ xaxis: { tickformat: '%a, %Y-%m-%d' } }
-				);
-
-				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ), roundToHour);
-				data['type'] = 'scatter';
-				data['line'] = { shape: 'spline' };
-
-				Plotly.newPlot(
-					'lastWeeks',
-					[ data ],
-					{ xaxis: { tickformat: '%a, %Y-%m-%d %H:%M' } }
-				);
-
-				data = accumulateByMonths( openStatsData.filter( x => filterGreaterThanDate(x, lastYear) ) );
-				data['type'] = 'bar';
-
-				Plotly.newPlot(
-					'monthly',
-					[ data ]
-				);
-
-				data = accumulateByWeekdays( openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ) );
-				data['type'] = 'bar';
-
-				Plotly.newPlot(
-					'daily',
-					[ data ]
-				);
-
-				data = accumulateByHours( openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ) );
-				data['type'] = 'bar';
-
-				Plotly.newPlot(
-					'hourly',
-					[ data ]
-				);
-			}
-
-			function onLoad() {
-				var xreq = new XMLHttpRequest();
-				xreq.open("GET", portalOpenStatsURL, true);
-				xreq.addEventListener("load", function() { initPlots(JSON.parse(this.responseText)); } );
-				xreq.send();
-
-			}
 
 			/*
 			 * group open-stats using the granularity of the given rounding function
@@ -218,6 +114,146 @@
 
 				return data;
 			}
+
+			function filterGreaterThanDate(element, date) {
+				return new Date(element.time) >= date;
+			}
+
+			function roundToDate(date) {
+				var d = roundToHour(date);
+				d.setHours(0);
+
+				return d;
+			}
+
+			function roundToMonth(date) {
+				var d = roundToDate(date);
+				d.setDate(1);
+				
+				return d;
+			}
+
+			function roundToHour(date) {
+				var d = new Date(date.getTime());
+				d.setMinutes(0);
+				d.setSeconds(0);
+				d.setMilliseconds(0);
+
+				return d;
+			}
+
+			/*
+			 * initializes plots using plotly lib
+			 * parameter openStatsData: parsed JSON of http://api.shackspace.de/v1/stats/portal
+			 * 	is expected to be an object like 
+			 *	[ 
+			 *		{ time: "1970-01-01T00:00:00", mean: "0" }, 
+			 *		{ time: "1970-01-01T01:00:00", mean: "1" },
+			 *		...
+			 *	]
+			 */
+			function initPlots(openStatsData) {
+				var dateMaxElement = openStatsData.reduce(
+						(max, element) => {
+							var elementDate = new Date(element.time);
+							var maxDate = new Date(max.time);
+
+							if (elementDate > maxDate)
+								return element;
+
+							return max;
+						} );
+				var dateMax = new Date(dateMaxElement.time).getTime();
+
+				var last14Days = new Date(dateMax - 1000*60*60*24*14)
+				var lastMonth = new Date(dateMax - 1000*60*60*24*31)
+				var lastYear = new Date(dateMax - 1000*60*60*24*365)
+
+				var data;
+
+				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, lastYear) ), roundToMonth );
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					'lastYear',
+					[ data ]
+				);
+
+				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ), roundToDate );
+				data['type'] = 'bar';
+				
+				Plotly.newPlot(
+					'lastMonth',
+					[ data ],
+					{ xaxis: { tickformat: '%a, %Y-%m-%d' } }
+				);
+
+				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ), roundToHour);
+				data['type'] = 'scatter';
+				data['line'] = { shape: 'spline' };
+
+				Plotly.newPlot(
+					'lastWeeks',
+					[ data ],
+					{ xaxis: { tickformat: '%a, %Y-%m-%d %H:%M' } }
+				);
+
+				data = accumulateByMonths( openStatsData.filter( x => filterGreaterThanDate(x, lastYear) ) );
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					'monthly',
+					[ data ]
+				);
+
+				data = accumulateByWeekdays( openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ) );
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					'daily',
+					[ data ]
+				);
+
+				data = accumulateByHours( openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ) );
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					'hourly',
+					[ data ]
+				);
+			}
+
+			function loadData(url, onLoadEventHandler) {
+				var xreq = new XMLHttpRequest();
+				xreq.open("GET", url, true);
+				xreq.addEventListener("load", onLoadEventHandler);
+				xreq.send();
+			}
+
+			/*
+			 * load portal open stats data and intialize plots
+			 */
+			function onLoad() {
+				loadData(
+					portalOpenStatsURL, 
+					function() { 
+						initPlots(JSON.parse(this.responseText)); 
+					}
+				); 
+			}
+
+			/*
+			 * This method can be called by the developer while debugging
+			 * to initialize plots with test data
+			 */
+			function loadDebugData() {
+				var debugScript = document.createElement("script");
+				debugScript.setAttribute("language", "JavaScript");
+				debugScript.setAttribute("src", "api.shackspace.v1.stats.portal.debugdata.js");
+
+				window.document.head.appendChild(debugScript);
+			} 
+
 		</script>
 	</head>
 
