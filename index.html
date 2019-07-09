@@ -1,9 +1,14 @@
 <html>
 	<head>
 		<title>Portal Open Stats</title>
-		<script language="JavaScript" src="plotly-latest.min.js"></script>
+		<link rel="stylesheel" href="jquery-ui-1.12.1/jquery-ui.css">
+
+		<script language="JavaScript" src="plotly-1.48.3/plotly-latest.min.js"></script>
+		<script language="JavaScript" src="jquery-ui-1.12.1/external/jquery/jquery.js"></script>
+		<script language="JavaScript" src="jquery-ui-1.12.1/jquery-ui.js"></script>
 		<script language="JavaScript">
 			var portalOpenStatsURL = "https://api.shackspace.de/v1/stats/portal";
+			var portalOpenStatsData;
 
 			/*
 			 * group open-stats using the granularity of the given rounding function
@@ -34,35 +39,6 @@
 				if (xValue != null) {
 					data.x.push(xValue);
 					data.y.push(yValue);
-				}
-
-				return data;
-			}
-
-			/*
-			 *	accumulate opening hours per month
-			 */
-			function accumulateByMonths(openStatsData) {
-				var data = { x: new Array(), y: new Array() };
-
-				data.x.push("January"); data.y.push(0);
-				data.x.push("Febuary"); data.y.push(0);
-				data.x.push("March"); data.y.push(0);
-				data.x.push("April"); data.y.push(0);
-				data.x.push("June"); data.y.push(0);
-				data.x.push("July"); data.y.push(0);
-				data.x.push("August"); data.y.push(0);
-				data.x.push("September"); data.y.push(0);
-				data.x.push("October"); data.y.push(0);
-				data.x.push("November"); data.y.push(0);
-				data.x.push("December"); data.y.push(0);
-
-				for (var i in openStatsData) {
-					var element = openStatsData[i];
-					var dateValue = new Date(element.time);
-
-					var month = dateValue.getMonth();
-					data.y[month] += element.mean*1;
 				}
 
 				return data;
@@ -142,6 +118,60 @@
 				return d;
 			}
 
+			function initGroupByMonthPlot(openStatsData, divName) {
+				var data = groupBy(openStatsData, roundToMonth);
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					divName,
+					[ data ]
+				);
+			}
+
+			function initGroupByDatePlot(openStatsData, divName) {
+				var data;
+				data = groupBy(openStatsData, roundToDate);
+				data['type'] = 'bar';
+				
+				Plotly.newPlot(
+					divName,
+					[ data ],
+					{ xaxis: { tickformat: '%a, %Y-%m-%d' } }
+				);
+			}
+
+			function initGroupByWeekdayPlot(openStatsData, divName) {
+				var data = groupBy(openStatsData, roundToHour);
+				data['type'] = 'scatter';
+				data['line'] = { shape: 'spline' };
+
+				Plotly.newPlot(
+					divName,
+					[ data ],
+					{ xaxis: { tickformat: '%a, %Y-%m-%d %H:%M' } }
+				);
+			}
+
+			function initAccumulateByWeekdaysPlot(openStatsData, divName) {
+				var data = accumulateByWeekdays(openStatsData);
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					divName,
+					[ data ]
+				);
+			}
+
+			function initAccumulateByHoursPlot(openStatsData, divName) {
+				var data = accumulateByHours(openStatsData);
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					divName,
+					[ data ]
+				);
+			}
+
 			/*
 			 * initializes plots using plotly lib
 			 * parameter openStatsData: parsed JSON of http://api.shackspace.de/v1/stats/portal
@@ -152,7 +182,7 @@
 			 *		...
 			 *	]
 			 */
-			function initPlots(openStatsData) {
+			function initAllPlots(openStatsData) {
 				var dateMaxElement = openStatsData.reduce(
 						(max, element) => {
 							var elementDate = new Date(element.time);
@@ -169,57 +199,29 @@
 				var lastMonth = new Date(dateMax - 1000*60*60*24*31)
 				var lastYear = new Date(dateMax - 1000*60*60*24*365)
 
-				var data;
-
-				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, lastYear) ), roundToMonth );
-				data['type'] = 'bar';
-
-				Plotly.newPlot(
-					'lastYear',
-					[ data ]
+				initGroupByMonthPlot(
+					openStatsData.filter( x => filterGreaterThanDate(x, lastYear) ), 
+					'lastYear'
 				);
 
-				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ), roundToDate );
-				data['type'] = 'bar';
-				
-				Plotly.newPlot(
-					'lastMonth',
-					[ data ],
-					{ xaxis: { tickformat: '%a, %Y-%m-%d' } }
+				initGroupByDatePlot(
+					openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ), 
+					'lastMonth'
 				);
 
-				data = groupBy( openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ), roundToHour);
-				data['type'] = 'scatter';
-				data['line'] = { shape: 'spline' };
-
-				Plotly.newPlot(
-					'lastWeeks',
-					[ data ],
-					{ xaxis: { tickformat: '%a, %Y-%m-%d %H:%M' } }
+				initGroupByWeekdayPlot(
+					openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ),
+					'lastWeeks'
 				);
 
-				data = accumulateByMonths( openStatsData.filter( x => filterGreaterThanDate(x, lastYear) ) );
-				data['type'] = 'bar';
-
-				Plotly.newPlot(
-					'monthly',
-					[ data ]
+				initAccumulateByWeekdaysPlot(
+					openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ),
+					'daily'
 				);
 
-				data = accumulateByWeekdays( openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ) );
-				data['type'] = 'bar';
-
-				Plotly.newPlot(
-					'daily',
-					[ data ]
-				);
-
-				data = accumulateByHours( openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ) );
-				data['type'] = 'bar';
-
-				Plotly.newPlot(
-					'hourly',
-					[ data ]
+				initAccumulateByHoursPlot(
+					openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ),
+					'hourly'
 				);
 			}
 
@@ -236,8 +238,9 @@
 			function onLoad() {
 				loadData(
 					portalOpenStatsURL, 
-					function() { 
-						initPlots(JSON.parse(this.responseText)); 
+					function() {
+						portalOpenStatsData = JSON.parse(this.responseText);
+						initAllPlots(portalOpenStatsData); 
 					}
 				); 
 			}
@@ -271,8 +274,6 @@
 		<div id="lastWeeks" style="width:80%;height:50%;"></div>
 
 		<h2>Accumulated opening hours</h2>
-		<h3>per month</h3>
-		<div id="monthly" style="width:80%;height:50%;"></div>
 		<h3>per weekday</h3>
 		<div id="daily" style="width:80%;height:50%;"></div>
 		<h3>per daytime</h3>
