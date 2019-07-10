@@ -249,14 +249,14 @@
 
 				initAccumulateByHoursPlot(
 					openStatsData
-						.filter( x => filterGreaterThanDate(x, last14Days) )
+						.filter( x => filterGreaterThanDate(x, lastMonth) )
 						.filter( x => !filterWeekendDays(x) ),
 					'accumulatedByDaytimeAtWorkingDays'
 				);
 
 				initAccumulateByHoursPlot(
 					openStatsData
-						.filter( x => filterGreaterThanDate(x, last14Days) )
+						.filter( x => filterGreaterThanDate(x, lastMonth) )
 						.filter( x => filterWeekendDays(x) ),
 					'accumulatedByDaytimeAtWeekend'
 				);
