@@ -1,7 +1,8 @@
 <html>
 	<head>
 		<title>Portal Open Stats</title>
-		<link rel="stylesheel" href="jquery-ui-1.12.1/jquery-ui.css">
+		<link rel="stylesheet" href="jquery-ui-1.12.1/jquery-ui.css">
+		<link rel="stylesheet" href="jquery-ui-1.12.1/jquery-ui.theme.css">
 
 		<script language="JavaScript" src="plotly-1.48.3/plotly-latest.min.js"></script>
 		<script language="JavaScript" src="jquery-ui-1.12.1/external/jquery/jquery.js"></script>
@@ -95,6 +96,19 @@
 				return new Date(element.time) >= date;
 			}
 
+			function filterWeekendDays(element, date) {
+				return new Date(element.time).getDay() > 5;
+			}
+
+			function roundToHour(date) {
+				var d = new Date(date.getTime());
+				d.setMinutes(0);
+				d.setSeconds(0);
+				d.setMilliseconds(0);
+
+				return d;
+			}
+
 			function roundToDate(date) {
 				var d = roundToHour(date);
 				d.setHours(0);
@@ -109,13 +123,22 @@
 				return d;
 			}
 
-			function roundToHour(date) {
-				var d = new Date(date.getTime());
-				d.setMinutes(0);
-				d.setSeconds(0);
-				d.setMilliseconds(0);
+			function roundToYear(date) {
+				var d = roundToMonth(date);
+				d.setMonth(0);
 
 				return d;
+			}
+
+			function initGroupByYearPlot(openStatsData, divName) {
+				var data = groupBy(openStatsData, roundToYear);
+				data['type'] = 'bar';
+
+				Plotly.newPlot(
+					divName,
+					[ data ],
+					{ xaxis: { tickformat: '%Y' } }
+				);
 			}
 
 			function initGroupByMonthPlot(openStatsData, divName) {
@@ -199,29 +222,43 @@
 				var lastMonth = new Date(dateMax - 1000*60*60*24*31)
 				var lastYear = new Date(dateMax - 1000*60*60*24*365)
 
+				initGroupByYearPlot(
+					openStatsData,
+					'groupByYear'
+				);
+
 				initGroupByMonthPlot(
 					openStatsData.filter( x => filterGreaterThanDate(x, lastYear) ), 
-					'lastYear'
+					'groupByMonth'
 				);
 
 				initGroupByDatePlot(
 					openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ), 
-					'lastMonth'
+					'groupByDate'
 				);
 
 				initGroupByWeekdayPlot(
 					openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ),
-					'lastWeeks'
+					'groupByHour'
 				);
 
 				initAccumulateByWeekdaysPlot(
 					openStatsData.filter( x => filterGreaterThanDate(x, lastMonth) ),
-					'daily'
+					'accumulatedByWeekday'
 				);
 
 				initAccumulateByHoursPlot(
-					openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ),
-					'hourly'
+					openStatsData
+						.filter( x => filterGreaterThanDate(x, last14Days) )
+						.filter( x => !filterWeekendDays(x) ),
+					'accumulatedByDaytimeAtWorkingDays'
+				);
+
+				initAccumulateByHoursPlot(
+					openStatsData
+						.filter( x => filterGreaterThanDate(x, last14Days) )
+						.filter( x => filterWeekendDays(x) ),
+					'accumulatedByDaytimeAtWeekend'
 				);
 			}
 
@@ -240,9 +277,13 @@
 					portalOpenStatsURL, 
 					function() {
 						portalOpenStatsData = JSON.parse(this.responseText);
-						initAllPlots(portalOpenStatsData); 
+						initAllPlots(portalOpenStatsData);
+
+						$('#mainTabs').tabs();
+						$('#openHoursTabs').tabs();
+						$('#accumulatedTabs').tabs();
 					}
-				); 
+				);
 			}
 
 			/*
@@ -265,18 +306,37 @@
 			// dirty hack to bypass Same Origin Policy preventing the XMLHttpRequest to succeed
 			document.write('<iframe src="' + portalOpenStatsURL + '" style="display:none"></iframe>');
 		</script>
-		<h2>Opening hours history</h2>
-		<h3>last year</h3>
-		<div id="lastYear" style="width:80%;height:50%;"></div>
-		<h3>last month</h3>
-		<div id="lastMonth" style="width:80%;height:50%;"></div>
-		<h3>last two weeks</h3>
-		<div id="lastWeeks" style="width:80%;height:50%;"></div>
-
-		<h2>Accumulated opening hours</h2>
-		<h3>per weekday</h3>
-		<div id="daily" style="width:80%;height:50%;"></div>
-		<h3>per daytime</h3>
-		<div id="hourly" style="width:80%;height:50%;"></div>
+		<div id="mainTabs">
+			<ul>
+				<li><a href="#accumulated">accumulated</a></li>
+				<li><a href="#history">history</a></li>
+			</ul>
+			<div id="accumulated">
+				<div id="accumulatedTabs">
+					<ul>
+						<li><a href="#accumulatedByWeekday">per day of week</a>
+						<li><a href="#accumulatedByDaytimeAtWorkingDays">per time of day at working days</a>
+						<li><a href="#accumulatedByDaytimeAtWeekend">per time of day at weekends</a>
+					</ul>
+					<div id="accumulatedByWeekday"></div>
+					<div id="accumulatedByDaytimeAtWorkingDays"></div>
+					<div id="accumulatedByDaytimeAtWeekend"></div>
+				</div>
+			</div>
+			<div id="history">
+				<div id="openHoursTabs">
+					<ul>
+						<li><a href="#groupByYear">per year</a></li>
+						<li><a href="#groupByMonth">per month</a></li>
+						<li><a href="#groupByDate">per day</a></li>
+						<li><a href="#groupByHour">per daytime</a></li>
+					</ul>
+					<div id="groupByYear"></div>
+					<div id="groupByMonth"></div>
+					<div id="groupByDate"></div>
+					<div id="groupByHour"></div>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>
