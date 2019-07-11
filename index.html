@@ -171,7 +171,7 @@
 				);
 			}
 
-			function initGroupByWeekdayPlot(openStatsData, divName) {
+			function initGroupByHourPlot(openStatsData, divName) {
 				var data = groupBy(openStatsData, roundToHour);
 				data['type'] = 'scatter';
 				data['line'] = { shape: 'spline' };
@@ -245,7 +245,7 @@
 					'groupByDate'
 				);
 
-				initGroupByWeekdayPlot(
+				initGroupByHourPlot(
 					openStatsData.filter( x => filterGreaterThanDate(x, last14Days) ),
 					'groupByHour'
 				);
