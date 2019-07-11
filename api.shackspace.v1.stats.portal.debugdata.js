@@ -13571,5 +13571,5 @@ var debugOpenStatsData = [{"time":"2017-06-10T14:00:00.000Z","mean":1},
 {"time":"2018-12-31T23:00:00.000Z","mean":0.6666666666666666}];
 
 // initalize plots with debug data
-if (initPlots)
-	initPlots(debugOpenStatsData);
+if (initAllPlots)
+	initAllPlots(debugOpenStatsData);
