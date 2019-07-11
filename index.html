@@ -97,7 +97,15 @@
 			}
 
 			function filterWeekendDays(element, date) {
-				return new Date(element.time).getDay() > 5;
+				var elementDate = new Date(element.time);
+
+				if (elementDate.getDay() > 5)
+					return true;
+
+				if (elementDate.getDay() == 5 && elementDate.getHours() >= 12)
+					return true;
+
+				return false;
 			}
 
 			function roundToHour(date) {
@@ -316,7 +324,7 @@
 					<ul>
 						<li><a href="#accumulatedByWeekday">per day of week</a>
 						<li><a href="#accumulatedByDaytimeAtWorkingDays">per time of day at working days</a>
-						<li><a href="#accumulatedByDaytimeAtWeekend">per time of day at weekends</a>
+						<li><a href="#accumulatedByDaytimeAtWeekend">per time of day at weekends & friday afternoon</a>
 					</ul>
 					<div id="accumulatedByWeekday"></div>
 					<div id="accumulatedByDaytimeAtWorkingDays"></div>
