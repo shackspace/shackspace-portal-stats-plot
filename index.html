@@ -314,17 +314,18 @@
 			// dirty hack to bypass Same Origin Policy preventing the XMLHttpRequest to succeed
 			document.write('<iframe src="' + portalOpenStatsURL + '" style="display:none"></iframe>');
 		</script>
+		<a href="../">Zur&uuml;ck</a>
 		<div id="mainTabs">
 			<ul>
-				<li><a href="#accumulated">accumulated</a></li>
-				<li><a href="#history">history</a></li>
+				<li><a href="#accumulated">&Ouml;ffnungszeiten</a></li>
+				<li><a href="#history">Verlauf</a></li>
 			</ul>
 			<div id="accumulated">
 				<div id="accumulatedTabs">
 					<ul>
-						<li><a href="#accumulatedByWeekday">per day of week</a>
-						<li><a href="#accumulatedByDaytimeAtWorkingDays">per time of day at working days</a>
-						<li><a href="#accumulatedByDaytimeAtWeekend">per time of day at weekends & friday afternoon</a>
+						<li><a href="#accumulatedByWeekday">Wochentage</a>
+						<li><a href="#accumulatedByDaytimeAtWorkingDays">Uhrzeiten Mo-Fr</a>
+						<li><a href="#accumulatedByDaytimeAtWeekend">Uhrzeiten Sa-So</a>
 					</ul>
 					<div id="accumulatedByWeekday" style="width:90%"></div>
 					<div id="accumulatedByDaytimeAtWorkingDays" style="width:90%"></div>
@@ -334,10 +335,10 @@
 			<div id="history">
 				<div id="openHoursTabs">
 					<ul>
-						<li><a href="#groupByYear">per year</a></li>
-						<li><a href="#groupByMonth">per month</a></li>
-						<li><a href="#groupByDate">per day</a></li>
-						<li><a href="#groupByHour">per daytime</a></li>
+						<li><a href="#groupByYear">Letzte Jahre</a></li>
+						<li><a href="#groupByMonth">Letzte Monate</a></li>
+						<li><a href="#groupByDate">Letzte Tage</a></li>
+						<li><a href="#groupByHour">Letzte Stunden</a></li>
 					</ul>
 					<div id="groupByYear" style="width:90%"></div>
 					<div id="groupByMonth" style="width:90%"></div>
