@@ -1,7 +1,7 @@
 /*
  * load portal open stats data and intialize plots
  */
-function onLoad() {
+function onLoadPortalStatsPlot() {
 	loadData(
 		portalOpenStatsURL, 
 		function() {
@@ -27,4 +27,4 @@ function loadDebugData() {
 	window.document.head.appendChild(debugScript);
 } 
 
-
+window.addEventListener("load", function(event) { onLoadPortalStatsPlot(); });
