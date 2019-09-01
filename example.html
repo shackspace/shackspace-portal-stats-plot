@@ -4,22 +4,35 @@
 		<link rel="stylesheet" href="jquery-ui-1.12.1/jquery-ui.css">
 		<link rel="stylesheet" href="jquery-ui-1.12.1/jquery-ui.theme.css">
 		<style>
-			.ui-tabs .ui-tabs-nav
-			a:hover {
-				border-bottom: none
+			.centered-thrubber {
+				position: fixed;
+				left: calc(50% - 128px/2);
+				top: calc(50% - 15px/2);
 			}
-		
-			.ui-state-active,
-			.ui-widget-content .ui-state-active,
-			.ui-widget-header .ui-state-active,
-			a.ui-button:active,
-			.ui-button:active,
-			.ui-button.ui-state-active:hover {
-				border: 1px solid #050;
-				background: #070;
-				font-weight: normal;
-				color: #ffffff;
-			}	
+
+			#portalstatsplotoverlay {
+				width: 100%;
+				height: 100vh;
+				position: fixed;
+				z-index: 1000;
+				background-color: #ffffff;
+			}
+
+			#portalstatsplot {
+				margin-top: $navbar-height;
+				min-height: 100vh;
+
+				.ui-state-active,
+				.ui-widget-content .ui-state-active,
+				.ui-widget-header .ui-state-active,
+				a.ui-button:active,
+				.ui-button:active,
+				.ui-button.ui-state-active:hover {
+					border: 1px solid #050;
+					background: #070;
+					font-weight: normal;
+					color: #ffffff;
+				}
 		</style>
 
 		<script language="JavaScript" src="plotly-1.48.3/plotly-latest.min.js"></script>
@@ -32,37 +45,47 @@
 		<!-- dirty hack to bypass Same Origin Policy preventing the XMLHttpRequest to succeed -->
 		<script language="JavaScript" src="js/bypass-same-origin-policy.js"></script>
 		<script language="JavaScript" src="js/init.js"></script>
-		<div id="mainTabs">
-			<ul>
-				<li><a href="#accumulated">&Ouml;ffnungszeiten</a></li>
-				<li><a href="#history">Verlauf</a></li>
-			</ul>
-			<div id="accumulated">
-				<div id="accumulatedTabs">
-					<ul>
-						<li><a href="#accumulatedByWeekday">Wochentage</a>
-						<li><a href="#accumulatedByDaytimeAtWorkingDays">Uhrzeiten Mo-Fr</a>
-						<li><a href="#accumulatedByDaytimeAtWeekend">Uhrzeiten Sa-So</a>
-					</ul>
-					<div id="accumulatedByWeekday" style="width:90%"></div>
-					<div id="accumulatedByDaytimeAtWorkingDays" style="width:90%"></div>
-					<div id="accumulatedByDaytimeAtWeekend" style="width:90%"></div>
-				</div>
+		<div id="portalstatsplot">
+			<div id="portalstatsplotoverlay">
+				<img src="Bert2_transp_green_cont_150ms.gif" class="centered-thrubber">
 			</div>
-			<div id="history">
-				<div id="openHoursTabs">
-					<ul>
-						<li><a href="#groupByYear">Letzte Jahre</a></li>
-						<li><a href="#groupByMonth">Letzte Monate</a></li>
-						<li><a href="#groupByDate">Letzte Tage</a></li>
-						<li><a href="#groupByHour">Letzte Stunden</a></li>
-					</ul>
-					<div id="groupByYear" style="width:90%"></div>
-					<div id="groupByMonth" style="width:90%"></div>
-					<div id="groupByDate" style="width:90%"></div>
-					<div id="groupByHour" style="width:90%"></div>
+			<div id="mainTabs">
+				<ul>
+					<li><a href="#accumulated">&Ouml;ffnungszeiten</a></li>
+					<li><a href="#history">Verlauf</a></li>
+				</ul>
+				<div id="accumulated">
+					<div id="accumulatedTabs">
+						<ul>
+							<li><a href="#accumulatedByWeekday">Wochentage</a>
+							<li><a href="#accumulatedByDaytimeAtWorkingDays">Uhrzeiten Mo-Fr</a>
+							<li><a href="#accumulatedByDaytimeAtWeekend">Uhrzeiten Sa-So</a>
+						</ul>
+						<div id="accumulatedByWeekday" style="width:90%"></div>
+						<div id="accumulatedByDaytimeAtWorkingDays" style="width:90%"></div>
+						<div id="accumulatedByDaytimeAtWeekend" style="width:90%"></div>
+					</div>
+				</div>
+				<div id="history">
+					<div id="openHoursTabs">
+						<ul>
+							<li><a href="#groupByYear">Letzte Jahre</a></li>
+							<li><a href="#groupByMonth">Letzte Monate</a></li>
+							<li><a href="#groupByDate">Letzte Tage</a></li>
+							<li><a href="#groupByHour">Letzte Stunden</a></li>
+						</ul>
+						<div id="groupByYear" style="width:90%"></div>
+						<div id="groupByMonth" style="width:90%"></div>
+						<div id="groupByDate" style="width:90%"></div>
+						<div id="groupByHour" style="width:90%"></div>
+					</div>
 				</div>
 			</div>
 		</div>
+
+		<script language="JavaScript">
+			window.addEventListener("portal-stats-initialized", function() { $("#portalstatsplotoverlay").hide(); });
+		</script>
+	
 	</body>
 </html>
