@@ -131,7 +131,7 @@ function roundToYear(date) {
 function initGroupByYearPlot(openStatsData, divName) {
 	var data = groupBy(openStatsData, roundToYear);
 	data['type'] = 'bar';
-	data['marker'] = { color: 'rgb(0,112,0)' };
+	data['marker'] = { color: 'rgb(0,96,0)' };
 
 	Plotly.newPlot(
 		divName,
@@ -143,7 +143,7 @@ function initGroupByYearPlot(openStatsData, divName) {
 function initGroupByMonthPlot(openStatsData, divName) {
 	var data = groupBy(openStatsData, roundToMonth);
 	data['type'] = 'bar';
-	data['marker'] = { color: 'rgb(0,112,0)' };
+	data['marker'] = { color: 'rgb(0,96,0)' };
 
 	Plotly.newPlot(
 		divName,
@@ -155,7 +155,7 @@ function initGroupByDatePlot(openStatsData, divName) {
 	var data;
 	data = groupBy(openStatsData, roundToDate);
 	data['type'] = 'bar';
-	data['marker'] = { color: 'rgb(0,112,0)' };
+	data['marker'] = { color: 'rgb(0,96,0)' };
 	
 	Plotly.newPlot(
 		divName,
@@ -168,7 +168,7 @@ function initGroupByHourPlot(openStatsData, divName) {
 	var data = groupBy(openStatsData, roundToHour);
 	data['type'] = 'scatter';
 	data['line'] = { shape: 'spline' };
-	data['marker'] = { color: 'rgb(0,112,0)' };
+	data['marker'] = { color: 'rgb(0,96,0)' };
 
 	Plotly.newPlot(
 		divName,
@@ -180,7 +180,7 @@ function initGroupByHourPlot(openStatsData, divName) {
 function initAccumulateByWeekdaysPlot(openStatsData, divName) {
 	var data = accumulateByWeekdays(openStatsData);
 	data['type'] = 'bar';
-	data['marker'] = { color: 'rgb(0,112,0)' };
+	data['marker'] = { color: 'rgb(0,96,0)' };
 
 	Plotly.newPlot(
 		divName,
@@ -191,7 +191,7 @@ function initAccumulateByWeekdaysPlot(openStatsData, divName) {
 function initAccumulateByHoursPlot(openStatsData, divName) {
 	var data = accumulateByHours(openStatsData);
 	data['type'] = 'bar';
-	data['marker'] = { color: 'rgb(0,112,0)' };
+	data['marker'] = { color: 'rgb(0,96,0)' };
 
 	Plotly.newPlot(
 		divName,
