@@ -1,7 +1,7 @@
 /*
  * load portal open stats data and intialize plots
  */
-function onLoadPortalStatsPlot() {
+function onLoadPortalStatsPlot(event) {
 	loadData(
 		portalOpenStatsURL, 
 		function() {
@@ -11,6 +11,9 @@ function onLoadPortalStatsPlot() {
 			$('#mainTabs').tabs();
 			$('#openHoursTabs').tabs();
 			$('#accumulatedTabs').tabs();
+
+			var eventSource = event.currentTarget;
+			eventSource.dispatchEvent( new CustomEvent('portal-stats-initialized') );
 		}
 	);
 }
@@ -27,4 +30,4 @@ function loadDebugData() {
 	window.document.head.appendChild(debugScript);
 } 
 
-window.addEventListener("load", function(event) { onLoadPortalStatsPlot(); });
+window.addEventListener("load", onLoadPortalStatsPlot);
