@@ -12,8 +12,7 @@ function onLoadPortalStatsPlot(event) {
 			$('#openHoursTabs').tabs();
 			$('#accumulatedTabs').tabs();
 
-			var eventSource = event.currentTarget;
-			eventSource.dispatchEvent( new CustomEvent('portal-stats-initialized') );
+			window.dispatchEvent( new CustomEvent('portal-stats-initialized') );
 		}
 	);
 }
