@@ -37,7 +37,6 @@
 			}
 		</style>
 
-		<script language="JavaScript" src="plotly-1.48.3/plotly-latest.min.js"></script>
 		<script language="JavaScript" src="jquery-ui-1.12.1/external/jquery/jquery.js"></script>
 		<script language="JavaScript" src="jquery-ui-1.12.1/jquery-ui.js"></script>
 		<script language="JavaScript" src="js/shackspace-portal-stats-plot.js"></script>
@@ -51,6 +50,8 @@
 			<div id="portalstatsplotoverlay">
 				<img src="Bert2_transp_green_cont_150ms.gif" class="centered-thrubber">
 			</div>
+			<!-- the plotly lib is very big - be sure to load it after the portalstatsplotoverlay div has been parsed by the browser to make sure that the thrubber appears -->
+			<script language="JavaScript" src="plotly-1.48.3/plotly-latest.min.js"></script>
 			<div id="mainTabs">
 				<ul>
 					<li><a href="#accumulated">&Ouml;ffnungszeiten</a></li>
