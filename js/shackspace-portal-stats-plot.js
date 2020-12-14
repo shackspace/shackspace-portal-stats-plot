@@ -53,7 +53,14 @@ function accumulateByWeekdays(openStatsData) {
 		var element = openStatsData[i];
 		var dateValue = new Date(element.time);
 
+		// 0 based index starting at sunday
 		var dayOfWeek = dateValue.getDay();
+
+		// convert it to 0 based index starting at monday
+		dayOfWeeg -= 1;
+		if (dayOfWeek < 0)
+			dayOfWeek += 7;
+
 		data.y[dayOfWeek] += element.mean*1;
 	}
 
