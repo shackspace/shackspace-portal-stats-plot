@@ -1,3 +1,6 @@
+var portalOpenStatsURL = "https://api.shackspace.de/v1/stats/portal";
+var portalOpenStatsData;
+
 /*
  * load portal open stats data and intialize plots
  */

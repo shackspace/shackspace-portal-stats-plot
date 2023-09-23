@@ -1,6 +1,3 @@
-var portalOpenStatsURL = "https://api.shackspace.de/v1/stats/portal";
-var portalOpenStatsData;
-
 /*
  * group open-stats using the granularity of the given rounding function
  */
